@@ -1,11 +1,12 @@
 // Import the RTK Query methods from the React-specific entry point
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
+import { postUpdated } from '@/features/posts/postsSlice'
 
 // Use the `Post` type we've already defined in `postsSlice`,
 // and then re-export it for ease of use
 import type { Post } from '@/features/posts/postsSlice'
-export type { Post }
+import type { User } from '@/features/users/usersSlice'
+
 
 export const apiSlice = createApi({
     reducerPath: 'api',
@@ -14,7 +15,15 @@ export const apiSlice = createApi({
     endpoints: builder => ({
       getPosts: builder.query<Post[], void>({
         query: () => '/posts',
-        providesTags: ['Post']
+          providesTags: (result = [], error, arg) => [
+        'Post',
+        ...result.map(({ id }) => ({ type: 'Post', id }) as const),
+
+        getUsers: builder.query<User[], void>({
+          query: () => '/users'
+        })
+    
+      ]
 
       }),
       getPost: builder.query<Post, string>({
@@ -30,6 +39,13 @@ export const apiSlice = createApi({
           body: initialPost
         }),
         invalidatesTags: ['Post']
+      }),
+      editPost: builder.mutation<Post, PostUpdated>({
+        query: post => ({
+          url: `posts/${post.id}`,
+          method: 'PATCH',
+          body: post
+        })
       })
     })
   })
@@ -39,5 +55,8 @@ export const apiSlice = createApi({
 export const {
     useGetPostsQuery,
     useGetPostQuery,
-    useAddNewPostMutation
+    useGetUsersQuery,
+    useAddNewPostMutation,
+    useEditPostMutation
+
   } = apiSlice
