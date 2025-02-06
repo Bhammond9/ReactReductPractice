@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
 import { Spinner } from '@/components/Spinner'
+import classnames from 'classnames'
 
 
 import { useAppSelector } from '@/app/hooks'
@@ -12,20 +13,14 @@ import { PostAuthor } from './PostAuthor'
 import { selectAllPosts } from './postsSlice'
 import { ReactionButtons } from './ReactionButtons'
 
-export const PostsList = () => {
-  const posts = useAppSelector(selectAllPosts)
-
-// Go back to passing a `post` object as a prop
 interface PostExcerptProps {
   post: Post
 }
 
 function PostExcerpt({ post }: PostExcerptProps) {
-
-  // Sort posts in reverse chronological order by datetime string
-  const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
-
-  const renderedPosts = orderedPosts.map((post) => (
+  console.log(' WHAT IS THE POST :', post);
+  
+  return (
     <article className="post-excerpt" key={post.id}>
       <h3>
         <Link to={`/posts/${post.id}`}>{post.title}</Link>
@@ -37,41 +32,41 @@ function PostExcerpt({ post }: PostExcerptProps) {
       <p className="post-content">{post.content.substring(0, 100)}</p>
       <ReactionButtons post={post} />
     </article>
-  ))
+  )
 }
 
 export const PostsList = () => {
-  // Calling the `useGetPostsQuery()` hook automatically fetches data!
-  const {
-    data: posts = [],
-    isLoading,
-    isSuccess,
-    isError,
-    error
-  } = useGetPostsQuery()
+  const { data: posts = [], isLoading, isFetching, isSuccess, isError, error } = useGetPostsQuery()
 
   const sortedPosts = useMemo(() => {
     const sortedPosts = posts.slice()
-    // Sort posts in descending chronological order
     sortedPosts.sort((a, b) => b.date.localeCompare(a.date))
     return sortedPosts
   }, [posts])
 
   let content: React.ReactNode
 
-   if (isLoading) {
+  if (isLoading) {
     content = <Spinner text="Loading..." />
   } else if (isSuccess) {
-    content = sortedPosts.map(post => <PostExcerpt key={post.id} post={post} />)
+    const renderedPosts = sortedPosts.map((post) => <PostExcerpt key={post.id} post={post} />)
+
+    const containerClassname = classnames('posts-container', {
+      disabled: isFetching,
+    })
+
+    content = <div className={containerClassname}>{renderedPosts}</div>
   } else if (isError) {
     content = <div>{error.toString()}</div>
   }
+
   return (
     <section className="posts-list">
       <h2>Posts</h2>
-      {renderedPosts}
+      {content}
     </section>
   )
 }
 
 
+ 

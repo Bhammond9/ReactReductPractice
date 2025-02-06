@@ -16,25 +16,17 @@ import { useGetPostQuery } from '@/features/api/apiSlice'
 export const SinglePostPage = () => {
   const { postId } = useParams()
 
-  const post = useAppSelector((state) => selectPostById(state, postId!))
-  const currentUsername = useAppSelector(selectCurrentUsername)!
   const { data: post, isFetching, isSuccess } = useGetPostQuery(postId!)
+  const currentUsername = useAppSelector(selectCurrentUsername)!
 
-  if (!post) {
-    return (
-      <section>
-        <h2>Post not found!</h2>
-      </section>
-    )
-  }
+  let content: React.ReactNode
+
+  const canEdit = currentUsername === post?.user
 
   if (isFetching) {
     content = <Spinner text="Loading..." />
   } else if (isSuccess) {
-  const canEdit = currentUsername === post.user
-
-  return (
-    <section>
+    content = (
       <article className="post">
         <h2>{post.title}</h2>
         <div>
@@ -49,6 +41,8 @@ export const SinglePostPage = () => {
           </Link>
         )}
       </article>
-    </section>
-  )
+    )
+  }
+
+  return <section>{content}</section>
 }

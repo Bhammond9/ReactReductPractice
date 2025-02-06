@@ -10,9 +10,12 @@ export type { Post }
 export const apiSlice = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
+    tagTypes: ['Post'],
     endpoints: builder => ({
       getPosts: builder.query<Post[], void>({
-        query: () => '/posts'
+        query: () => '/posts',
+        providesTags: ['Post']
+
       }),
       getPost: builder.query<Post, string>({
         query: postId => `/posts/${postId}`
@@ -25,7 +28,8 @@ export const apiSlice = createApi({
           method: 'POST',
           // Include the entire post object as the body of the request
           body: initialPost
-        })
+        }),
+        invalidatesTags: ['Post']
       })
     })
   })

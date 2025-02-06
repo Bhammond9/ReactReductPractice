@@ -2,7 +2,7 @@ import React from 'react'
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { selectCurrentUsername } from '@/features/auth/authSlice'
-
+import { useAddNewPostMutation } from '@/features/api/apiSlice'
 import { postAdded } from './postsSlice'
 
 // TS types for the input fields
@@ -16,11 +16,10 @@ interface AddPostFormElements extends HTMLFormElement {
 }
 
 export const AddPostForm = () => {
-  const dispatch = useAppDispatch()
-
   const userId = useAppSelector(selectCurrentUsername)!
+  const [addNewPost, { isLoading }] = useAddNewPostMutation()
 
-  const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
+  const handleSubmit = async (e: React.FormEvent<AddPostFormElements>) => {
     // Prevent server submission
     e.preventDefault()
 
@@ -28,9 +27,15 @@ export const AddPostForm = () => {
     const title = elements.postTitle.value
     const content = elements.postContent.value
 
-    dispatch(postAdded(title, content, userId))
+    const form = e.currentTarget
 
-    e.currentTarget.reset()
+    try {
+      await addNewPost({ title, content, user: userId }).unwrap()
+
+      form.reset()
+    } catch (err) {
+      console.error('Failed to save the post: ', err)
+    }
   }
 
   return (
@@ -41,7 +46,7 @@ export const AddPostForm = () => {
         <input type="text" id="postTitle" defaultValue="" required />
         <label htmlFor="postContent">Content:</label>
         <textarea id="postContent" name="postContent" defaultValue="" required />
-        <button>Save Post</button>
+        <button disabled={isLoading}>Save Post</button>
       </form>
     </section>
   )
