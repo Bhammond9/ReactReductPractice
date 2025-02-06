@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
-
+import { Spinner } from '@/components/Spinner'
 import { useAppSelector } from '@/app/hooks'
 import { TimeAgo } from '@/components/TimeAgo'
+import { Content } from 'react-tiny-toast'
 
 import { selectCurrentUsername } from '@/features/auth/authSlice'
 
@@ -9,11 +10,15 @@ import { PostAuthor } from './PostAuthor'
 import { selectPostById } from './postsSlice'
 import { ReactionButtons } from './ReactionButtons'
 
+import { useGetPostQuery } from '@/features/api/apiSlice'
+
+
 export const SinglePostPage = () => {
   const { postId } = useParams()
 
   const post = useAppSelector((state) => selectPostById(state, postId!))
   const currentUsername = useAppSelector(selectCurrentUsername)!
+  const { data: post, isFetching, isSuccess } = useGetPostQuery(postId!)
 
   if (!post) {
     return (
@@ -23,6 +28,9 @@ export const SinglePostPage = () => {
     )
   }
 
+  if (isFetching) {
+    content = <Spinner text="Loading..." />
+  } else if (isSuccess) {
   const canEdit = currentUsername === post.user
 
   return (

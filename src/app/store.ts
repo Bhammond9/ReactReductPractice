@@ -5,7 +5,10 @@ import postsReducer from '@/features/posts/postsSlice'
 import usersReducer from '@/features/users/usersSlice'
 import authReducer from '@/features/auth/authSlice'
 
-import { apiSlice } from '@/features/api/apiSlice'
+import { listenerMiddleware } from '@/app/listenerMiddleware'
+
+
+import { ListenerMiddleware } from '@reduxjs/toolkit'
 
 // // An example slice reducer function that shows how a Redux reducer works inside.
 // // We'll replace this soon with real app logic.
